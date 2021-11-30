@@ -12,6 +12,22 @@ DEFAULT_TIMEOUT = 10
 class HTTPException(Exception):
     pass
 
+
+class APIException(Exception):
+    def __init__(self, status_code, message):
+        self.status_code = status_code
+        self.message = message
+        super(APIException, self).__init__(self, status_code, message)
+
+    def __dict__(self):
+        return {'status_code': self.status_code, 'message': self.message}
+
+    def __str__(self):
+        return 'APIException[{status_code}] {message}'.format(
+            status_code=self.status_code, message=self.message
+        )
+
+
 class KavenegarAPI(object):
     def __init__(self, apikey, timeout=None):
         self.version = 'v1'
@@ -44,7 +60,7 @@ class KavenegarAPI(object):
                 if response['return']['status'] == 200:
                     response = response['entries']
                 else:
-                    raise APIException('APIException[{}] {}'.format(response['return']['status'],response['return']['message']))
+                    raise APIException(response['return']['status'], response['return']['message'])
             except ValueError as e:
                 raise HTTPException(e)
             return response
